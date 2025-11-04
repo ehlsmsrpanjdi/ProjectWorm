@@ -23,6 +23,16 @@ public class WormStatus
     public Action<int> OnLevelUp;
     public Action<float> OnSizeChange; // ⭐ 추가: 크기 변경 이벤트
 
+
+    private float attackMultiplier = 1f;
+    private float defenseMultiplier = 1f;
+    private float currencyMultiplier = 1f;
+    private float digestionMultiplier = 1f;
+    private float experienceMultiplier = 1f;
+    private float durationMultiplier = 1f;
+    private float rangeMultiplier = 1f;
+    private float cooldownMultiplier = 1f;
+
     public void Reset()
     {
         Hunger = MaxHunger;
@@ -52,8 +62,10 @@ public class WormStatus
 
     #region "Gain"
 
+    // ⭐ 수정: 경험치 획득 시 보너스 적용
     public void GainExp(float _Exp)
     {
+        _Exp *= experienceMultiplier; // ⭐ 추가
         Exp += _Exp;
         OnExpchange?.Invoke(Exp / MaxExp);
 
@@ -63,8 +75,10 @@ public class WormStatus
         }
     }
 
+    // ⭐ 수정: 배고픔 회복 시 보너스 적용
     public void RestoreHunger(float _Amount)
     {
+        _Amount *= digestionMultiplier; // ⭐ 추가
         Hunger = Mathf.Clamp(Hunger + _Amount, 0, MaxHunger);
         OnHungryChange?.Invoke(Hunger / MaxHunger);
     }
@@ -101,15 +115,62 @@ public class WormStatus
 
     #endregion
 
+    // ⭐ 수정: 데미지 받을 때 방어력 적용
     public void TakeDamage(float _Damage)
     {
+        _Damage *= defenseMultiplier; // ⭐ 추가
         Hunger = Mathf.Clamp(Hunger - _Damage, 0, MaxHunger);
         OnHungryChange?.Invoke(Hunger / MaxHunger);
 
         LogHelper.Log($"배고픔 감소! 남은 배고픔: {Hunger}/{MaxHunger}");
     }
 
+    #region "Status
 
+    // ⭐ 추가: 패시브 보너스 적용 메서드들
+    public void AddAttackBonus(float value)
+    {
+        attackMultiplier *= (1f + value);
+        LogHelper.Log($"공격력 보너스: {attackMultiplier * 100f}%");
+    }
+
+    public void AddDefenseBonus(float value)
+    {
+        defenseMultiplier *= (1f - value); // 받는 데미지 감소
+        LogHelper.Log($"방어력 보너스: {defenseMultiplier * 100f}%");
+    }
+
+    public void AddCurrencyBonus(float value)
+    {
+        currencyMultiplier *= (1f + value);
+    }
+
+    public void AddDigestionBonus(float value)
+    {
+        digestionMultiplier *= (1f + value);
+    }
+
+    public void AddExperienceBonus(float value)
+    {
+        experienceMultiplier *= (1f + value);
+    }
+
+    public void AddDurationBonus(float value)
+    {
+        durationMultiplier *= (1f + value);
+    }
+
+    public void AddRangeBonus(float value)
+    {
+        rangeMultiplier *= (1f + value);
+    }
+
+    public void AddCooldownBonus(float value)
+    {
+        cooldownMultiplier *= (1f - value); // 쿨타임 감소
+    }
+
+    #endregion
 
     #region "Debug"
 
@@ -134,4 +195,14 @@ public class WormStatus
     public float GetMaxHunger() => MaxHunger;
     public int GetLevel() => Level;
     public float GetSize() => Size; // ⭐ 추가
+
+    public float GetAttackMultiplier() => attackMultiplier;
+    public float GetDefenseMultiplier() => defenseMultiplier;
+    public float GetCurrencyMultiplier() => currencyMultiplier;
+    public float GetDigestionMultiplier() => digestionMultiplier;
+    public float GetExperienceMultiplier() => experienceMultiplier;
+    public float GetDurationMultiplier() => durationMultiplier;
+    public float GetRangeMultiplier() => rangeMultiplier;
+    public float GetCooldownMultiplier() => cooldownMultiplier;
+
 }

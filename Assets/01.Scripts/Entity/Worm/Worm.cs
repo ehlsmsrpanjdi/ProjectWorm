@@ -10,7 +10,9 @@ public class Worm : Entity
         get { return instance; }
     }
 
-    WormStatus status = new WormStatus();
+    [Header("스킬 시스템")]
+    public WormStatus status; // private → public으로 변경 (SkillManager 접근용)
+
     private WormAnimation wormAnimation;
     private WormNavi wormNavi;
 
@@ -34,6 +36,14 @@ public class Worm : Entity
         OnSizeChanged(OriginScale.x);
 
         status.OnSizeChange += OnSizeChanged;
+    }
+
+    private void Start()
+    {
+        if (SkillManager.Instance == null)
+        {
+            LogHelper.LogError("SkillManager가 없음!");
+        }
     }
 
     private void Update()
