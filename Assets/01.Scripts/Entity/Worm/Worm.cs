@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-// ⭐ 추가: Entity 상속
+// ⭐ 수정: Entity 상속하지만 health는 사용 안 함 (Hunger를 체력으로 사용)
 public class Worm : Entity
 {
     static Worm instance;
@@ -13,12 +13,15 @@ public class Worm : Entity
     WormStatus status = new WormStatus();
 
     [Header("지렁이 전투 스탯")]
-    public float biteDamage = 50f;  // ⭐ 추가: 물기 데미지
+    public float biteDamage = 50f;
 
-    // ⭐ 추가: Entity의 Awake 오버라이드
+    [Header("지렁이 크기")]
+    public float currentSize = 1f;
+
+
     protected override void Awake()
     {
-        base.Awake(); // Entity의 Awake 호출
+        // ⭐ 수정: base.Awake() 호출 안 함 (health 초기화 불필요)
         instance = this;
     }
 
@@ -34,17 +37,44 @@ public class Worm : Entity
 
         if (!isAlive)
         {
-            // 배고파서 죽음
             Die();
         }
     }
 
-    // ⭐ 추가: 죽음 처리 오버라이드
+    // ⭐ 수정: 죽음 처리 오버라이드 (isDead만 설정)
     protected override void Die()
     {
-        LogHelper.Log("지렁이가 죽었다!");
+        if (isDead) return;
+        isDead = true;
+
+        LogHelper.Log("지렁이가 배고파서 죽었다!");
+
+        if (deathEffect != null)
+        {
+            Instantiate(deathEffect, transform.position, Quaternion.identity);
+        }
+
         // TODO: 게임오버 UI 표시
-        base.Die();
+
+        Destroy(gameObject);
+    }
+
+    // ⭐ 수정: TakeDamage 오버라이드 (Hunger를 깎음)
+    public override void TakeDamage(float damage)
+    {
+        if (isDead) return;
+
+        // ⭐ 수정: health 대신 Hunger를 깎음
+        status.TakeDamage(damage);
+
+        if (hitEffect != null)
+        {
+            Instantiate(hitEffect, transform.position, Quaternion.identity);
+        }
+
+        LogHelper.Log($"지렁이가 {damage} 데미지를 받음!");
+
+        // status.Update가 알아서 죽음 처리함
     }
 
     #region "StatusChange"
@@ -59,17 +89,14 @@ public class Worm : Entity
         status.RestoreHunger(_Amount);
     }
 
-    // ⭐ 추가: 먹을 수 있는 객체 먹기
     public bool TryEat(Edible edible)
     {
         if (edible == null || edible.IsDead()) return false;
 
         float targetMaxHealth = edible.GetMaxHealth();
 
-        // 물기 데미지가 상대 최대체력보다 높으면 즉시 먹기
         if (biteDamage >= targetMaxHealth)
         {
-            // 한 번에 먹기 성공
             GainExp(edible.GetExpReward());
             RestoreHunger(edible.GetHungerRestore());
             edible.OnEaten();
@@ -79,11 +106,9 @@ public class Worm : Entity
         }
         else
         {
-            // 체력만 깎기
             edible.TakeDamage(biteDamage);
             LogHelper.Log($"{edible.GetEdibleName()}을(를) 물었다! (데미지: {biteDamage})");
 
-            // 죽었으면 먹기
             if (edible.IsDead())
             {
                 GainExp(edible.GetExpReward());
@@ -94,19 +119,11 @@ public class Worm : Entity
         }
     }
 
-    // ⭐ 추가: 먹을 수 없는 객체와 충돌
     public void TouchInedible(Inedible inedible)
     {
         if (inedible == null || inedible.IsDead()) return;
 
-        // 지렁이가 데미지 받음
         inedible.OnTouchWorm();
-
-        // TODO: 특수 능력이 있다면 먹을 수 있게 변환
-        // if (HasSpecialAbility("EatEverything"))
-        // {
-        //     inedible.ConvertToEdible(50, 30f);
-        // }
     }
 
     #endregion
@@ -137,7 +154,6 @@ public class Worm : Entity
         GainExp(_Exp);
     }
 
-    // ⭐ 추가: 디버그용 데미지 테스트
     public void DebugTakeDamage(float _Damage)
     {
         TakeDamage(_Damage);
