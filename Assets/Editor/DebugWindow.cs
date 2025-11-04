@@ -41,21 +41,21 @@ public class DebugWindow : EditorWindow
 
     void ReplaceAllTMPFonts(TMP_FontAsset newFont)
     {
-        int count = 0;
-        var texts = FindObjectsOfType<TextMeshProUGUI>(true); // 비활성화 오브젝트 포함
-        foreach (var tmp in texts)
-        {
-            Undo.RecordObject(tmp, "Change TMP Font");
+        //int count = 0;
+        //var texts = FindObjectsOfType<TextMeshProUGUI>(true); // 비활성화 오브젝트 포함
+        //foreach (var tmp in texts)
+        //{
+        //    Undo.RecordObject(tmp, "Change TMP Font");
 
-            tmp.font = newFont;
-            tmp.fontSharedMaterial = newFont.material; // 머티리얼도 reset
-            tmp.UpdateFontAsset();
+        //    tmp.font = newFont;
+        //    tmp.fontSharedMaterial = newFont.material; // 머티리얼도 reset
+        //    tmp.UpdateFontAsset();
 
-            EditorUtility.SetDirty(tmp);
-            count++;
-        }
+        //    EditorUtility.SetDirty(tmp);
+        //    count++;
+        //}
 
-        Debug.Log($"✅ Scene 내 모든 TextMeshProUGUI {count}개를 '{newFont.name}' 폰트로 교체 완료!");
+        //Debug.Log($"✅ Scene 내 모든 TextMeshProUGUI {count}개를 '{newFont.name}' 폰트로 교체 완료!");
     }
 
 }
