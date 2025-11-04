@@ -38,6 +38,28 @@ public class Worm : MonoBehaviour
         status.GainExp(_Exp);
     }
 
+    public void ResotreHunger(float _Amount)
+    {
+        status.RestoreHunger(_Amount);
+    }
+
+    //public bool TryEat(Edible edible)
+    //{
+    //    // 크기 체크
+    //    if (currentSize < edible.GetRequiredSize())
+    //    {
+    //        LogHelper.Log("너무 커서 먹을 수 없음!");
+    //        return false;
+    //    }
+
+    //    // 먹기 성공
+    //    GainExp(edible.GetExpReward());
+    //    RestoreHunger(edible.GetHungerRestore());
+    //    edible.OnEaten();
+
+    //    return true;
+    //}
+
     #endregion
 
 

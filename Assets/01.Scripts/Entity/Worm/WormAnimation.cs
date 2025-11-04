@@ -48,12 +48,6 @@ public class WormAnimation : MonoBehaviour
 
     void Start()
     {
-        //followSpeed = 25f;
-
-        //rotationSpeed = 2f;
-
-        //baseOffset = 2f;
-
         segments.Clear();
         int j = 0;
 
@@ -114,27 +108,6 @@ public class WormAnimation : MonoBehaviour
 
                 Quaternion targetRot = Quaternion.LookRotation(dir.normalized, normal);
                 cur.transform.rotation = targetRot;
-                //cur.transform.rotation = Quaternion.Slerp(cur.transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
-
-                //// 대안 1번
-                //Vector3 currentDir = cur.transform.forward; 
-                //Vector3 targetDir = (cur.prevTransform.position - cur.transform.position).normalized;
-
-                //Quaternion rot = Quaternion.FromToRotation(currentDir, targetDir);
-                //cur.transform.rotation = rot;
-
-
-
-
-
-                //Vector3 currentDir = cur.transform.forward;
-                //Vector3 targetDir = (cur.prevTransform.position - cur.transform.position).normalized;
-
-                //Quaternion rot = Quaternion.FromToRotation(currentDir, targetDir);
-
-                //Quaternion rotation = Quaternion.Slerp(cur.transform.rotation, cur.prevTransform.rotation, rotationSpeed * Time.deltaTime);
-
-                //cur.transform.rotation = rotation;
             }
         }
     }
