@@ -37,6 +37,11 @@ public class DebugWindow : EditorWindow
             Worm.Instance.DebugGainExp(10f);
         }
 
+        if (GUILayout.Button("LevelUP"))
+        {
+            Worm.Instance.DebugLevelUP();
+        }
+
     }
 
     void ReplaceAllTMPFonts(TMP_FontAsset newFont)

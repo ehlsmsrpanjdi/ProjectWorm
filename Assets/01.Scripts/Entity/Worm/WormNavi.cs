@@ -18,6 +18,11 @@ public class WormNavi : MonoBehaviour
         horizontalAction = naviInput.actions["AD"];
 
         naviInput.enabled = true;
+
+        Originaccelerate = accelerate;
+        OriginmaxSpeed = maxSpeed;
+        OrigingravityValue = gravityValue;
+        OriginnoneInputRatio = noneInputRatio;
     }
 
     private void Update()
@@ -33,12 +38,14 @@ public class WormNavi : MonoBehaviour
     }
 
     float maxSpeed = 20f;
+    float accelerate = 15f;
 
+    float OriginmaxSpeed = 20f;
+    float Originaccelerate = 15f;
 
 
     float tempAccX = 0f;
     float tempAccY = 0f;
-    float accrate = 15f;
 
     void InputFunction()
     {
@@ -50,13 +57,14 @@ public class WormNavi : MonoBehaviour
             tempAccY = 0f;
         }
 
-        CaculateAcc(tempAccX * accrate, tempAccY * accrate);
+        CaculateAcc(tempAccX * accelerate, tempAccY * accelerate);
     }
 
     float tempX = 0f;
     float tempY = 0f;
 
     float noneInputRatio = 5f;
+    float OriginnoneInputRatio = 5f;
 
     void CaculateAcc(float _x, float _y)
     {
@@ -85,6 +93,7 @@ public class WormNavi : MonoBehaviour
     }
 
     float gravityValue = -10f;
+    float OrigingravityValue = -10f;
 
     void CalculateGravity()
     {
@@ -92,5 +101,13 @@ public class WormNavi : MonoBehaviour
         {
             naviAcc.y = Mathf.Clamp(naviAcc.y + gravityValue * Time.deltaTime, -maxSpeed, maxSpeed);
         }
+    }
+
+    public void CalculateSpeed(float _Ratio)
+    {
+        maxSpeed = OriginmaxSpeed * _Ratio;
+        accelerate = Originaccelerate * _Ratio;
+        noneInputRatio = OriginnoneInputRatio * _Ratio;
+        gravityValue = OrigingravityValue * _Ratio;
     }
 }

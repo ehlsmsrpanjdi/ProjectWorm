@@ -22,6 +22,12 @@ public class WormAnimation : MonoBehaviour
 
     public float baseOffset = 2.5f;
 
+    public float OriginfollowSpeed = 30f;
+
+    public float OriginrotationSpeed = 2f;
+
+    public float OriginbaseOffset = 2.5f;
+
     private void Reset()
     {
         CaptureCameraTransform = GameObject.Find("CaptureCamera").transform;
@@ -44,6 +50,13 @@ public class WormAnimation : MonoBehaviour
                 tail.Add(child);
             }
         }
+    }
+
+    private void Awake()
+    {
+        OriginfollowSpeed = followSpeed;
+        OriginrotationSpeed = rotationSpeed;
+        OriginbaseOffset = baseOffset;
     }
 
     void Start()
@@ -112,4 +125,16 @@ public class WormAnimation : MonoBehaviour
         }
     }
 
+    public void CalculateScale(float _Ratio)
+    {
+        followSpeed = OriginfollowSpeed * _Ratio;
+        rotationSpeed = OriginrotationSpeed * _Ratio;
+        baseOffset = OriginbaseOffset * _Ratio;
+
+        foreach (Segment i in segments)
+        {
+            if (i.prevTransform)
+                i.offset = baseOffset;
+        }
+    }
 }

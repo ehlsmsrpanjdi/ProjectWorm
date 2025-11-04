@@ -11,18 +11,29 @@ public class Worm : Entity
     }
 
     WormStatus status = new WormStatus();
+    private WormAnimation wormAnimation;
+    private WormNavi wormNavi;
 
     [Header("지렁이 전투 스탯")]
     public float biteDamage = 50f;
 
-    [Header("지렁이 크기")]
-    public float currentSize = 1f;
+    public Vector3 OriginScale { get; private set; }
+
 
 
     protected override void Awake()
     {
-        // ⭐ 수정: base.Awake() 호출 안 함 (health 초기화 불필요)
         instance = this;
+
+        wormAnimation = GetComponentInChildren<WormAnimation>();
+        wormNavi = GetComponentInChildren<WormNavi>();
+
+        OriginScale = transform.localScale;
+
+        status.SetScaleRatio(OriginScale.x);
+        OnSizeChanged(OriginScale.x);
+
+        status.OnSizeChange += OnSizeChanged;
     }
 
     private void Update()
@@ -89,14 +100,26 @@ public class Worm : Entity
         status.RestoreHunger(_Amount);
     }
 
+    // ⭐ 수정: 크기 체크 추가
     public bool TryEat(Edible edible)
     {
         if (edible == null || edible.IsDead()) return false;
 
+        float currentSize = status.GetSize(); // ⭐ 추가
+        float targetRequiredSize = edible.GetRequiredSize(); // ⭐ 추가
         float targetMaxHealth = edible.GetMaxHealth();
 
+        // ⭐ 추가: 1단계 - 크기 체크 (우선순위 높음)
+        if (currentSize < targetRequiredSize)
+        {
+            LogHelper.Log($"{edible.GetEdibleName()}은(는) 너무 커서 먹을 수 없음! (필요 크기: {targetRequiredSize}, 현재 크기: {currentSize})");
+            return false;
+        }
+
+        // ⭐ 수정: 2단계 - 데미지 체크 (한입에 먹을지 판단)
         if (biteDamage >= targetMaxHealth)
         {
+            // 한입에 먹기
             GainExp(edible.GetExpReward());
             RestoreHunger(edible.GetHungerRestore());
             edible.OnEaten();
@@ -106,9 +129,11 @@ public class Worm : Entity
         }
         else
         {
+            // 체력만 깎기
             edible.TakeDamage(biteDamage);
             LogHelper.Log($"{edible.GetEdibleName()}을(를) 물었다! (데미지: {biteDamage})");
 
+            // 죽었으면 보상
             if (edible.IsDead())
             {
                 GainExp(edible.GetExpReward());
@@ -147,6 +172,23 @@ public class Worm : Entity
 
     #endregion
 
+    #region "Animation"
+    private void OnSizeChanged(float _newSize)
+    {
+        transform.localScale = OriginScale * _newSize;
+
+        if (wormAnimation != null)
+        {
+            wormAnimation.CalculateScale(_newSize);
+        }
+        if (wormNavi != null)
+        {
+            wormNavi.CalculateSpeed(_newSize);
+        }
+    }
+
+    #endregion
+
     #region "Debug"
 
     public void DebugGainExp(float _Exp)
@@ -157,6 +199,17 @@ public class Worm : Entity
     public void DebugTakeDamage(float _Damage)
     {
         TakeDamage(_Damage);
+    }
+
+    public void DebugLevelUP()
+    {
+        status.DebugLevelUp();
+    }
+
+    // ⭐ 추가: 디버그용 크기 변경
+    public void DebugSetSize(float _Size)
+    {
+        status.DebugSetSize(_Size);
     }
 
     #endregion
