@@ -1,11 +1,21 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 
-public class SkillManager : MonoBehaviour
+public class SkillManager
 {
-    public static SkillManager Instance;
-
+    static SkillManager instance;
+    public static SkillManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = new SkillManager();
+                instance.Init();
+            }
+            return instance;
+        }
+    }
     [Header("스킬 데이터베이스")]
     public List<SkillData> allActiveSkills;  // 9개
     public List<SkillData> allPassiveSkills; // 8개
@@ -16,22 +26,12 @@ public class SkillManager : MonoBehaviour
     private Dictionary<int, ActiveSkillBase> activeSkillComponents = new Dictionary<int, ActiveSkillBase>();
     private Worm worm;
 
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    private void Start()
+    void Init()
     {
         worm = Worm.Instance;
+
     }
+
 
     #region "레벨업 & 선택"
 
@@ -108,7 +108,7 @@ public class SkillManager : MonoBehaviour
     private void AcquireSkill(SkillData skill)
     {
         // 복사본 생성 (ScriptableObject 원본 보호)
-        SkillData skillCopy = Instantiate(skill);
+        SkillData skillCopy = MonoBehaviour.Instantiate(skill);
         skillCopy.currentLevel = (skill.skillType == SkillType.Active) ? 1 : 0;
 
         ownedSkills.Add(skillCopy);
@@ -186,7 +186,7 @@ public class SkillManager : MonoBehaviour
         RemoveSkill(originalSkill);
 
         // 각성 스킬 추가
-        SkillData evolvedCopy = Instantiate(originalSkill.evolvedSkill);
+        SkillData evolvedCopy = MonoBehaviour.Instantiate(originalSkill.evolvedSkill);
         evolvedCopy.currentLevel = 1; // 각성 스킬은 1레벨부터 시작
         ownedSkills.Add(evolvedCopy);
 
@@ -200,7 +200,7 @@ public class SkillManager : MonoBehaviour
 
         if (activeSkillComponents.ContainsKey(skill.skillID))
         {
-            Destroy(activeSkillComponents[skill.skillID]);
+            MonoBehaviour.Destroy(activeSkillComponents[skill.skillID]);
             activeSkillComponents.Remove(skill.skillID);
         }
     }
@@ -217,19 +217,19 @@ public class SkillManager : MonoBehaviour
 
         //switch (skill.skillID)
         //{
-            //case 1: // 흡입
-            //    skillComponent = worm.gameObject.AddComponent<VacuumSkill>();
-            //    break;
-            //case 2: // 충격파
-            //    skillComponent = worm.gameObject.AddComponent<ShockwaveSkill>();
-            //    break;
-            //case 3: // 레이저
-            //    skillComponent = worm.gameObject.AddComponent<LaserSkill>();
-            //    break;
-            //// ... 나머지 스킬들
-            //default:
-            //    LogHelper.LogError($"알 수 없는 스킬 ID: {skill.skillID}");
-            //    return;
+        //case 1: // 흡입
+        //    skillComponent = worm.gameObject.AddComponent<VacuumSkill>();
+        //    break;
+        //case 2: // 충격파
+        //    skillComponent = worm.gameObject.AddComponent<ShockwaveSkill>();
+        //    break;
+        //case 3: // 레이저
+        //    skillComponent = worm.gameObject.AddComponent<LaserSkill>();
+        //    break;
+        //// ... 나머지 스킬들
+        //default:
+        //    LogHelper.LogError($"알 수 없는 스킬 ID: {skill.skillID}");
+        //    return;
         //}
 
         if (skillComponent != null)

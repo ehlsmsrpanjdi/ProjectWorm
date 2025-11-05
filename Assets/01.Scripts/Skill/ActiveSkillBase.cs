@@ -8,16 +8,16 @@ public abstract class ActiveSkillBase : MonoBehaviour
     protected WormStatus status;
 
     // 기본 수치
-    protected float baseDamage = 100f;
-    protected float baseRange = 5f;
-    protected float baseCooldown = 5f;
-    protected float baseDuration = 3f;
+    [SerializeField] protected float baseDamage = 100f;
+    [SerializeField] protected float baseRange = 5f;
+    [SerializeField] protected float baseCooldown = 5f;
+    [SerializeField] protected float baseDuration = 3f;
 
     // 현재 수치 (레벨 + 패시브 반영)
-    protected float currentDamage;
-    protected float currentRange;
-    protected float currentCooldown;
-    protected float currentDuration;
+    public float currentDamage { get; protected set; }
+    public float currentRange { get; protected set; }
+    public float currentCooldown { get; protected set; }
+    public float currentDuration { get; protected set; }
 
     protected float cooldownTimer = 0f;
 
@@ -36,7 +36,7 @@ public abstract class ActiveSkillBase : MonoBehaviour
         if (cooldownTimer <= 0f)
         {
             Execute();
-            cooldownTimer = currentCooldown;
+            cooldownTimer += currentCooldown;
         }
     }
 

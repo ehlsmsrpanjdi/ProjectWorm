@@ -11,17 +11,17 @@ public class Worm : Entity
     }
 
     [Header("스킬 시스템")]
-    public WormStatus status; // private → public으로 변경 (SkillManager 접근용)
+    public WormStatus status = new WormStatus(); // private → public으로 변경 (SkillManager 접근용)
 
     private WormAnimation wormAnimation;
-    private WormNavi wormNavi;
+    public WormNavi wormNavi { get; private set; }
 
     [Header("지렁이 전투 스탯")]
     public float biteDamage = 50f;
 
     public Vector3 OriginScale { get; private set; }
 
-
+    public WormEating wormHead { get; private set; }
 
     protected override void Awake()
     {
@@ -29,6 +29,7 @@ public class Worm : Entity
 
         wormAnimation = GetComponentInChildren<WormAnimation>();
         wormNavi = GetComponentInChildren<WormNavi>();
+        wormHead = GetComponentInChildren<WormEating>();
 
         OriginScale = transform.localScale;
 
@@ -195,6 +196,15 @@ public class Worm : Entity
         {
             wormNavi.CalculateSpeed(_newSize);
         }
+    }
+
+    #endregion
+
+    #region "GetSet"
+
+    public Vector3 GetDirection()
+    {
+        return (wormNavi.transform.position - wormHead.transform.position).normalized;
     }
 
     #endregion

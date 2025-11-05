@@ -1,4 +1,5 @@
 ﻿using TMPro;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -40,6 +41,21 @@ public class DebugWindow : EditorWindow
         if (GUILayout.Button("LevelUP"))
         {
             Worm.Instance.DebugLevelUP();
+        }
+
+        if (GUILayout.Button("Laser"))
+        {
+            Worm.Instance.transform.AddComponent<LaserSkill>();
+        }
+
+        if (GUILayout.Button("AirCannon"))
+        {
+            Worm.Instance.transform.AddComponent<AirCannonSkill>();
+        }
+
+        if (GUILayout.Button("ShokeWave"))
+        {
+            Worm.Instance.transform.AddComponent<ShokeWaveSkill>();
         }
 
     }

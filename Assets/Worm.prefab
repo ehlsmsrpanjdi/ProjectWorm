@@ -239,6 +239,9 @@ MonoBehaviour:
   followSpeed: 30
   rotationSpeed: 2
   baseOffset: 1.5
+  OriginfollowSpeed: 30
+  OriginrotationSpeed: 2
+  OriginbaseOffset: 2.5
 --- !u!1 &520778795520975554
 GameObject:
   m_ObjectHideFlags: 0
@@ -680,6 +683,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3785399293883708483}
   - component: {fileID: 5813798611796516811}
+  - component: {fileID: 7185804408041081548}
   m_Layer: 27
   m_Name: Head
   m_TagString: Untagged
@@ -742,6 +746,18 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1.72
+--- !u!114 &7185804408041081548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401868162920472960}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20f2a3f0bb72c9f4fab963683482a3cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1425351112960319347
 GameObject:
   m_ObjectHideFlags: 0
@@ -2240,6 +2256,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51c03c3eba8c20f4ea7685c1cf41fa4d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 100
+  deathEffect: {fileID: 0}
+  hitEffect: {fileID: 0}
+  biteDamage: 50
 --- !u!1 &5291821662391226115
 GameObject:
   m_ObjectHideFlags: 0
