@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SkillManager
 {
-    static SkillManager instance;
+    private static SkillManager instance;
     public static SkillManager Instance
     {
         get
@@ -16,32 +16,45 @@ public class SkillManager
             return instance;
         }
     }
-    [Header("스킬 데이터베이스")]
-    public List<SkillData> allActiveSkills;  // 9개
-    public List<SkillData> allPassiveSkills; // 8개
 
-    [Header("현재 보유 스킬")]
     public List<SkillData> ownedSkills = new List<SkillData>();
+
+    // ⭐ 추가: 각성 대기 중인 스킬들 (원본 스킬 ID → 각성 스킬 ID)
+    private Dictionary<int, int> pendingEvolutions = new Dictionary<int, int>();
 
     private Dictionary<int, ActiveSkillBase> activeSkillComponents = new Dictionary<int, ActiveSkillBase>();
     private Worm worm;
 
-    void Init()
+    private void Init()
     {
         worm = Worm.Instance;
-
+        var dataManager = SkillDataManager.Instance;
+        LogHelper.Log("SkillManager 초기화 완료");
     }
-
 
     #region "레벨업 & 선택"
 
-    // ⭐ 레벨업 시 3개 선택지 제공
     public SkillData[] GetRandomSkillOptions()
     {
         List<SkillData> availableSkills = new List<SkillData>();
 
-        // 1. 아직 안 가진 액티브 스킬
-        foreach (var skill in allActiveSkills)
+        // ⭐ 1. 각성 대기 중인 스킬 추가 (최우선)
+        foreach (var kvp in pendingEvolutions)
+        {
+            int evolvedSkillID = kvp.Value;
+            SkillData evolvedSkill = SkillDataManager.Instance.GetSkillByID(evolvedSkillID);
+            if (evolvedSkill != null)
+            {
+                availableSkills.Add(evolvedSkill);
+                LogHelper.Log($"각성 스킬 선택지 추가: {evolvedSkill.skillName}");
+            }
+        }
+
+        List<SkillData> allActives = SkillDataManager.Instance.GetAllActiveSkills();
+        List<SkillData> allPassives = SkillDataManager.Instance.GetAllPassiveSkills();
+
+        // 2. 아직 안 가진 액티브 스킬
+        foreach (var skill in allActives)
         {
             if (!HasSkill(skill.skillID))
             {
@@ -49,8 +62,8 @@ public class SkillManager
             }
         }
 
-        // 2. 아직 안 가진 패시브 스킬
-        foreach (var skill in allPassiveSkills)
+        // 3. 아직 안 가진 패시브 스킬
+        foreach (var skill in allPassives)
         {
             if (!HasSkill(skill.skillID))
             {
@@ -58,7 +71,7 @@ public class SkillManager
             }
         }
 
-        // 3. 이미 가진 액티브 중 5강 아닌 것
+        // 4. 이미 가진 액티브 중 5강 아닌 것
         foreach (var skill in ownedSkills)
         {
             if (skill.skillType == SkillType.Active && skill.currentLevel < skill.maxLevel)
@@ -75,59 +88,62 @@ public class SkillManager
         }
 
         SkillData[] result = new SkillData[3];
+        List<SkillData> tempList = new List<SkillData>(availableSkills);
+
         for (int i = 0; i < 3; i++)
         {
-            int randomIndex = Random.Range(0, availableSkills.Count);
-            result[i] = availableSkills[randomIndex];
-            availableSkills.RemoveAt(randomIndex);
+            int randomIndex = Random.Range(0, tempList.Count);
+            result[i] = tempList[randomIndex];
+            tempList.RemoveAt(randomIndex);
         }
 
         return result;
     }
 
-    // ⭐ 스킬 선택
     public void SelectSkill(SkillData skill)
     {
-        if (HasSkill(skill.skillID))
+        // ⭐ 각성 스킬인지 체크
+        if (IsEvolvedSkill(skill))
         {
-            // 이미 보유 → 레벨업
+            ExecutePendingEvolution(skill);
+        }
+        else if (HasSkill(skill.skillID))
+        {
             LevelUpSkill(skill);
         }
         else
         {
-            // 새로 획득
             AcquireSkill(skill);
         }
+
+        LogHelper.Log($"스킬 선택 완료: {skill.skillName}");
     }
 
     #endregion
 
     #region "스킬 획득 & 레벨업"
 
-    // ⭐ 새 스킬 획득
     private void AcquireSkill(SkillData skill)
     {
-        // 복사본 생성 (ScriptableObject 원본 보호)
-        SkillData skillCopy = MonoBehaviour.Instantiate(skill);
+        SkillData skillCopy = skill.Clone();
         skillCopy.currentLevel = (skill.skillType == SkillType.Active) ? 1 : 0;
 
         ownedSkills.Add(skillCopy);
 
         if (skill.skillType == SkillType.Active)
         {
-            // 액티브 스킬 컴포넌트 추가
             AddActiveSkillComponent(skillCopy);
         }
         else
         {
-            // 패시브 스킬 효과 적용
             ApplyPassiveEffect(skillCopy);
+            // ⭐ 패시브 획득 시 각성 가능 체크
+            CheckPendingEvolutionsAfterPassive(skillCopy);
         }
 
         LogHelper.Log($"스킬 획득: {skill.skillName}");
     }
 
-    // ⭐ 스킬 레벨업
     private void LevelUpSkill(SkillData skill)
     {
         SkillData ownedSkill = GetSkillByID(skill.skillID);
@@ -135,7 +151,6 @@ public class SkillManager
 
         ownedSkill.currentLevel++;
 
-        // 액티브 스킬 컴포넌트 업데이트
         if (activeSkillComponents.ContainsKey(skill.skillID))
         {
             activeSkillComponents[skill.skillID].OnLevelUp(ownedSkill.currentLevel);
@@ -143,10 +158,10 @@ public class SkillManager
 
         LogHelper.Log($"스킬 레벨업: {skill.skillName} → Lv.{ownedSkill.currentLevel}");
 
-        // 5강 달성 시 각성 체크
+        // ⭐ 5강 달성 시 각성 가능 체크
         if (ownedSkill.currentLevel == 5)
         {
-            CheckEvolution(ownedSkill);
+            CheckPendingEvolutionsAfterLevelUp(ownedSkill);
         }
     }
 
@@ -154,83 +169,144 @@ public class SkillManager
 
     #region "각성 시스템"
 
-    // ⭐ 각성 체크
-    private void CheckEvolution(SkillData skill)
+    // ⭐ 액티브 5강 달성 시 각성 가능 체크
+    private void CheckPendingEvolutionsAfterLevelUp(SkillData skill)
     {
-        if (skill.evolvedSkill == null) return;
-        if (skill.requiredPassiveIDs == null || skill.requiredPassiveIDs.Length == 0) return;
+        if (skill.skillType != SkillType.Active) return;
 
-        // 필요한 패시브 모두 보유했는지 체크
-        bool canEvolve = true;
-        foreach (int passiveID in skill.requiredPassiveIDs)
+        List<int> ownedSkillIDs = ownedSkills.ConvertAll(s => s.skillID);
+
+        foreach (var combo in skill.combinations)
         {
-            if (!HasSkill(passiveID))
+            if (combo.CanCombine(ownedSkillIDs))
             {
-                canEvolve = false;
+                // 조합 가능!
+                if (!pendingEvolutions.ContainsKey(skill.skillID))
+                {
+                    pendingEvolutions.Add(skill.skillID, combo.evolvedSkillID);
+                    LogHelper.Log($"{skill.skillName} 각성 대기 상태! (필요 조건 충족)");
+                }
+            }
+        }
+    }
+
+    // ⭐ 패시브 획득 시 각성 가능 체크
+    private void CheckPendingEvolutionsAfterPassive(SkillData newPassive)
+    {
+        if (newPassive.skillType != SkillType.Passive) return;
+
+        // 이 패시브를 필요로 하는 액티브들 확인
+        List<int> relatedActives = SkillDataManager.Instance.GetActiveSkillsUsingPassive(newPassive.skillID);
+
+        foreach (int activeID in relatedActives)
+        {
+            SkillData ownedActive = GetSkillByID(activeID);
+
+            // 보유하고 있고 5강인가?
+            if (ownedActive != null && ownedActive.currentLevel == 5)
+            {
+                List<int> ownedSkillIDs = ownedSkills.ConvertAll(s => s.skillID);
+
+                foreach (var combo in ownedActive.combinations)
+                {
+                    if (combo.CanCombine(ownedSkillIDs))
+                    {
+                        // 조합 가능!
+                        if (!pendingEvolutions.ContainsKey(ownedActive.skillID))
+                        {
+                            pendingEvolutions.Add(ownedActive.skillID, combo.evolvedSkillID);
+                            LogHelper.Log($"{ownedActive.skillName} 각성 대기 상태! ({newPassive.skillName} 획득으로 조건 충족)");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ⭐ 각성 스킬 선택 시 실행
+    private void ExecutePendingEvolution(SkillData evolvedSkill)
+    {
+        // 어떤 원본 스킬의 각성인지 찾기
+        int originalSkillID = -1;
+        foreach (var kvp in pendingEvolutions)
+        {
+            if (kvp.Value == evolvedSkill.skillID)
+            {
+                originalSkillID = kvp.Key;
                 break;
             }
         }
 
-        if (canEvolve)
+        if (originalSkillID == -1)
         {
-            EvolveSkill(skill);
+            LogHelper.LogError("각성 대기 목록에서 찾을 수 없음!");
+            return;
         }
-    }
 
-    // ⭐ 각성 실행
-    private void EvolveSkill(SkillData originalSkill)
-    {
-        LogHelper.Log($"{originalSkill.skillName} 각성!");
+        SkillData originalSkill = GetSkillByID(originalSkillID);
+        if (originalSkill == null) return;
+
+        LogHelper.Log($"{originalSkill.skillName} → {evolvedSkill.skillName} 각성!");
 
         // 기존 스킬 제거
         RemoveSkill(originalSkill);
 
         // 각성 스킬 추가
-        SkillData evolvedCopy = MonoBehaviour.Instantiate(originalSkill.evolvedSkill);
-        evolvedCopy.currentLevel = 1; // 각성 스킬은 1레벨부터 시작
+        SkillData evolvedCopy = evolvedSkill.Clone();
+        evolvedCopy.currentLevel = 1;
         ownedSkills.Add(evolvedCopy);
-
         AddActiveSkillComponent(evolvedCopy);
+
+        // 각성 대기 목록에서 제거
+        pendingEvolutions.Remove(originalSkillID);
     }
 
-    // ⭐ 스킬 제거
     private void RemoveSkill(SkillData skill)
     {
         ownedSkills.Remove(skill);
 
         if (activeSkillComponents.ContainsKey(skill.skillID))
         {
-            MonoBehaviour.Destroy(activeSkillComponents[skill.skillID]);
+            Object.Destroy(activeSkillComponents[skill.skillID]);
             activeSkillComponents.Remove(skill.skillID);
         }
+    }
+
+    // ⭐ 각성 스킬인지 체크
+    private bool IsEvolvedSkill(SkillData skill)
+    {
+        return pendingEvolutions.ContainsValue(skill.skillID);
     }
 
     #endregion
 
     #region "컴포넌트 관리"
 
-    // ⭐ 액티브 스킬 컴포넌트 추가
     private void AddActiveSkillComponent(SkillData skill)
     {
-        // skillID에 따라 적절한 컴포넌트 추가
+        if (worm == null) return;
+
         ActiveSkillBase skillComponent = null;
 
-        //switch (skill.skillID)
-        //{
-        //case 1: // 흡입
-        //    skillComponent = worm.gameObject.AddComponent<VacuumSkill>();
-        //    break;
-        //case 2: // 충격파
-        //    skillComponent = worm.gameObject.AddComponent<ShockwaveSkill>();
-        //    break;
-        //case 3: // 레이저
-        //    skillComponent = worm.gameObject.AddComponent<LaserSkill>();
-        //    break;
-        //// ... 나머지 스킬들
-        //default:
-        //    LogHelper.LogError($"알 수 없는 스킬 ID: {skill.skillID}");
-        //    return;
-        //}
+        switch (skill.skillID)
+        {
+            case 1: // 흡입
+                LogHelper.Log("흡입 스킬 컴포넌트 추가 (미구현)");
+                break;
+            case 2: // 충격파
+                LogHelper.Log("충격파 스킬 컴포넌트 추가 (미구현)");
+                break;
+            default:
+                if (skill.skillID >= 100) // 각성 스킬
+                {
+                    LogHelper.Log($"각성 스킬 ID {skill.skillID} 추가 (미구현)");
+                }
+                else
+                {
+                    LogHelper.LogWarrning($"알 수 없는 스킬 ID: {skill.skillID}");
+                }
+                return;
+        }
 
         if (skillComponent != null)
         {
@@ -243,7 +319,6 @@ public class SkillManager
 
     #region "패시브 효과"
 
-    // ⭐ 패시브 효과 적용
     private void ApplyPassiveEffect(SkillData passive)
     {
         if (worm == null || worm.status == null) return;
@@ -276,7 +351,6 @@ public class SkillManager
                 break;
         }
 
-        // 모든 액티브 스킬 재계산
         foreach (var skillComponent in activeSkillComponents.Values)
         {
             skillComponent.OnPassiveChanged();
@@ -289,14 +363,25 @@ public class SkillManager
 
     #region "유틸리티"
 
-    private bool HasSkill(int skillID)
+    public bool HasSkill(int skillID)
     {
         return ownedSkills.Exists(s => s.skillID == skillID);
     }
 
-    private SkillData GetSkillByID(int skillID)
+    public SkillData GetSkillByID(int skillID)
     {
         return ownedSkills.Find(s => s.skillID == skillID);
+    }
+
+    public List<SkillData> GetOwnedSkills()
+    {
+        return new List<SkillData>(ownedSkills);
+    }
+
+    // ⭐ 추가: 각성 대기 중인 스킬 확인
+    public Dictionary<int, int> GetPendingEvolutions()
+    {
+        return new Dictionary<int, int>(pendingEvolutions);
     }
 
     #endregion

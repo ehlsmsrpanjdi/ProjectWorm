@@ -54,6 +54,8 @@ public class StatusUI : UIBase
 
     void LevelUPUI()
     {
-        UIManager.Instance.GetUI<SelectionUI>().OnUI();
+        SelectionUI ui = UIManager.Instance.GetUI<SelectionUI>();
+        ui.OnUI();
+        ui.ShowSkillOptions();
     }
 }
