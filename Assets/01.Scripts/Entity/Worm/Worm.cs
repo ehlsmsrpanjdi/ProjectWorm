@@ -22,6 +22,7 @@ public class Worm : Entity
     public Vector3 OriginScale { get; private set; }
 
     public WormEating wormHead { get; private set; }
+    public WormTale wormTale { get; private set; }
 
     protected override void Awake()
     {
@@ -30,6 +31,7 @@ public class Worm : Entity
         wormAnimation = GetComponentInChildren<WormAnimation>();
         wormNavi = GetComponentInChildren<WormNavi>();
         wormHead = GetComponentInChildren<WormEating>();
+        wormTale = GetComponentInChildren<WormTale>();
 
         OriginScale = transform.localScale;
 
@@ -176,7 +178,7 @@ public class Worm : Entity
         status.OnExpchange += _Action;
     }
 
-    public void SetLevelUpUIBind(Action<int> _Action)
+    public void SetLevelUpUIBind(Action _Action)
     {
         status.OnLevelUp += _Action;
     }

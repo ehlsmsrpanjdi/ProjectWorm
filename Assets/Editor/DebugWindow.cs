@@ -58,6 +58,11 @@ public class DebugWindow : EditorWindow
             Worm.Instance.transform.AddComponent<ShokeWaveSkill>();
         }
 
+        if (GUILayout.Button("Virus"))
+        {
+            Worm.Instance.transform.AddComponent<VirusSkill>();
+        }
+
     }
 
     void ReplaceAllTMPFonts(TMP_FontAsset newFont)

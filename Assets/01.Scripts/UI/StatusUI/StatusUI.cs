@@ -32,6 +32,7 @@ public class StatusUI : UIBase
     {
         Worm.Instance.SetHungerUIBind(ChangeHungerFilled);
         Worm.Instance.SetExpUIBind(ChangeExpFilled);
+        Worm.Instance.SetLevelUpUIBind(LevelUPUI);
     }
 
     Vector3 localScale;
@@ -49,5 +50,10 @@ public class StatusUI : UIBase
         localScale = expImg.rectTransform.localScale;
         localScale.x = _Ratio;
         expImg.rectTransform.localScale = localScale;
+    }
+
+    void LevelUPUI()
+    {
+        UIManager.Instance.GetUI<SelectionUI>().OnUI();
     }
 }

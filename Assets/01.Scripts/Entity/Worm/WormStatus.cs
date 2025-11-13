@@ -20,7 +20,7 @@ public class WormStatus
 
     public Action<float> OnHungryChange;
     public Action<float> OnExpchange;
-    public Action<int> OnLevelUp;
+    public Action OnLevelUp;
     public Action<float> OnSizeChange; // ⭐ 추가: 크기 변경 이벤트
 
 
@@ -98,7 +98,7 @@ public class WormStatus
         IncreaseSize(sizeIncreasePerLevel);
 
         LogHelper.Log($"레벨업! 현재 레벨: {Level}, 크기: {Size}");
-        OnLevelUp?.Invoke(Level);
+        OnLevelUp?.Invoke();
     }
 
     public void IncreaseSize(float _Amount)
