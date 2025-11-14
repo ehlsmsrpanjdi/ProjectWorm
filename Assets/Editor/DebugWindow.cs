@@ -63,6 +63,12 @@ public class DebugWindow : EditorWindow
             Worm.Instance.transform.AddComponent<VirusSkill>();
         }
 
+
+        if (GUILayout.Button("Vaccum"))
+        {
+            Worm.Instance.transform.AddComponent<VaccumSkill>();
+        }
+
     }
 
     void ReplaceAllTMPFonts(TMP_FontAsset newFont)
