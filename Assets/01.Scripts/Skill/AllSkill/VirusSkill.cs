@@ -7,26 +7,26 @@ public class VirusSkill : ActiveSkillBase
     protected override void Awake()
     {
         virusPrefab = Resources.Load<GameObject>("SkillVirus");
-        currentDamage = baseDamage;
-        currentRange = baseRange;
-        currentCooldown = baseCooldown;
-        currentDuration = baseDuration;
-        worm = Worm.Instance;
+        base.Awake();
     }
 
+    protected override void InitializeBaseStats()
+    {
+        baseDamage = 5f;
+        baseRange = 1f;
+        baseCooldown = 5f;
+        baseDuration = 3f;
+    }
 
     protected override void Execute()
     {
         WormTale wormTale = Worm.Instance.wormTale;
 
-        GameObject spawnedLaser = MonoBehaviour.Instantiate(virusPrefab);
-        spawnedLaser.GetComponent<SkillBodyBase>().Init(this);
+        GameObject spawned = Instantiate(virusPrefab);
+        spawned.GetComponent<SkillBodyBase>().Init(this);
 
-        spawnedLaser.transform.position = wormTale.transform.position;
-    }
+        spawned.transform.position = wormTale.transform.position;
 
-    protected override void InitializeBaseStats()
-    {
-        throw new System.NotImplementedException();
+        LogHelper.Log("염산 스킬 발동!");
     }
 }

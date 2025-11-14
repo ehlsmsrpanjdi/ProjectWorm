@@ -7,26 +7,26 @@ public class AirCannonSkill : ActiveSkillBase
     protected override void Awake()
     {
         airCannonPrefab = Resources.Load<GameObject>("SkillAirCannon");
-        currentDamage = baseDamage;
-        currentRange = baseRange;
-        currentCooldown = baseCooldown;
-        currentDuration = baseDuration;
-        worm = Worm.Instance;
+        base.Awake();
     }
 
+    protected override void InitializeBaseStats()
+    {
+        baseDamage = 40f;
+        baseRange = 1f;        // 투사체 크기
+        baseCooldown = 5f;
+        baseDuration = 5f;     // 투사체 생존 시간
+    }
 
     protected override void Execute()
     {
         WormEating wormHead = Worm.Instance.wormHead;
 
-        GameObject spawnedLaser = MonoBehaviour.Instantiate(airCannonPrefab);
-        spawnedLaser.GetComponent<SkillBodyBase>().Init(this);
+        GameObject spawned = Instantiate(airCannonPrefab);
+        spawned.GetComponent<SkillBodyBase>().Init(this);
 
-        spawnedLaser.transform.position = wormHead.transform.position;
-    }
+        spawned.transform.position = wormHead.transform.position;
 
-    protected override void InitializeBaseStats()
-    {
-        throw new System.NotImplementedException();
+        LogHelper.Log("진공파 스킬 발동!");
     }
 }

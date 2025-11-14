@@ -290,14 +290,26 @@ public class SkillManager
 
         switch (skill.skillID)
         {
-            case 1: // 흡입
-                LogHelper.Log("흡입 스킬 컴포넌트 추가 (미구현)");
+            case 1:
+                skillComponent = worm.gameObject.AddComponent<VaccumSkill>();
                 break;
-            case 2: // 충격파
-                LogHelper.Log("충격파 스킬 컴포넌트 추가 (미구현)");
+            case 2:
+                skillComponent = worm.gameObject.AddComponent<ShokeWaveSkill>();
+                break;
+            case 3:
+                skillComponent = worm.gameObject.AddComponent<LaserSkill>();
+                break;
+            case 6:
+                skillComponent = worm.gameObject.AddComponent<VirusSkill>();
+                break;
+            case 9:
+                skillComponent = worm.gameObject.AddComponent<AirCannonSkill>();
+                break;
+            case 10:
+                skillComponent = worm.gameObject.AddComponent<SandstormSkill>();
                 break;
             default:
-                if (skill.skillID >= 100) // 각성 스킬
+                if (skill.skillID >= 200)
                 {
                     LogHelper.Log($"각성 스킬 ID {skill.skillID} 추가 (미구현)");
                 }
@@ -310,8 +322,14 @@ public class SkillManager
 
         if (skillComponent != null)
         {
-            skillComponent.skillData = skill;
+            // ⭐ 올바른 순서:
+            // 1. AddComponent (Awake 자동 호출 - 최소한만 초기화)
+            // 2. Initialize 명시적 호출 (skillData 주입 + 계산)
+            skillComponent.Initialize(skill);
+
             activeSkillComponents[skill.skillID] = skillComponent;
+
+            LogHelper.Log($"{skill.skillName} 컴포넌트 추가 완료");
         }
     }
 

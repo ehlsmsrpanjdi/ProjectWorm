@@ -7,26 +7,26 @@ public class ShokeWaveSkill : ActiveSkillBase
     protected override void Awake()
     {
         shokeWavePrefab = Resources.Load<GameObject>("SkillShockWave");
-        currentDamage = baseDamage;
-        currentRange = baseRange;
-        currentCooldown = baseCooldown;
-        currentDuration = baseDuration;
-        worm = Worm.Instance;
+        base.Awake();
     }
 
+    protected override void InitializeBaseStats()
+    {
+        baseDamage = 100f;     // 즉사급
+        baseRange = 15f;
+        baseCooldown = 5f;
+        baseDuration = 1f;
+    }
 
     protected override void Execute()
     {
         WormEating wormHead = Worm.Instance.wormHead;
 
-        GameObject spawnedLaser = MonoBehaviour.Instantiate(shokeWavePrefab);
-        spawnedLaser.GetComponent<SkillBodyBase>().Init(this);
+        GameObject spawned = Instantiate(shokeWavePrefab);
+        spawned.GetComponent<SkillBodyBase>().Init(this);
 
-        spawnedLaser.transform.position = wormHead.transform.position;
-    }
+        spawned.transform.position = wormHead.transform.position;
 
-    protected override void InitializeBaseStats()
-    {
-        throw new System.NotImplementedException();
+        LogHelper.Log("충격파 스킬 발동!");
     }
 }

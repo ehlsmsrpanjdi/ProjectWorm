@@ -45,28 +45,33 @@ public class DebugWindow : EditorWindow
 
         if (GUILayout.Button("Laser"))
         {
-            Worm.Instance.transform.AddComponent<LaserSkill>();
+            SkillManager.Instance.SelectSkill(SkillDataManager.Instance.GetSkillByID(3));
         }
 
         if (GUILayout.Button("AirCannon"))
         {
-            Worm.Instance.transform.AddComponent<AirCannonSkill>();
+            SkillManager.Instance.SelectSkill(SkillDataManager.Instance.GetSkillByID(9));
         }
 
         if (GUILayout.Button("ShokeWave"))
         {
-            Worm.Instance.transform.AddComponent<ShokeWaveSkill>();
+            SkillManager.Instance.SelectSkill(SkillDataManager.Instance.GetSkillByID(2));
         }
 
         if (GUILayout.Button("Virus"))
         {
-            Worm.Instance.transform.AddComponent<VirusSkill>();
+            SkillManager.Instance.SelectSkill(SkillDataManager.Instance.GetSkillByID(6));
         }
 
 
         if (GUILayout.Button("Vaccum"))
         {
-            Worm.Instance.transform.AddComponent<VaccumSkill>();
+            SkillManager.Instance.SelectSkill(SkillDataManager.Instance.GetSkillByID(1));
+        }
+
+        if (GUILayout.Button("SandStorm"))
+        {
+            SkillManager.Instance.SelectSkill(SkillDataManager.Instance.GetSkillByID(10));
         }
 
     }
