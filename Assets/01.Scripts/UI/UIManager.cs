@@ -75,7 +75,8 @@ public class UIManager
 
         if (true == uiDictionary.ContainsKey(_UI.GetType()))
         {
-            Debug.Log("이미 들어온 UI가 또 들어오려고함");
+            uiDictionary[uiType] = _UI;
+            Debug.Log("UI 교체됨 근데 교체 안되게 만들예정인데 왜 교체됐지");
             return;
         }
         uiDictionary.Add(uiType, _UI);

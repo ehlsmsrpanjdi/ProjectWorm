@@ -78,7 +78,7 @@ public class Worm : Entity
             Instantiate(deathEffect, transform.position, Quaternion.identity);
         }
 
-        // TODO: 게임오버 UI 표시
+        UIManager.Instance.OnUI<GameLoseUI>();
 
         Destroy(gameObject);
     }

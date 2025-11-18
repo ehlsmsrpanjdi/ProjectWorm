@@ -1,5 +1,4 @@
 ﻿using TMPro;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -72,6 +71,12 @@ public class DebugWindow : EditorWindow
         if (GUILayout.Button("SandStorm"))
         {
             SkillManager.Instance.SelectSkill(SkillDataManager.Instance.GetSkillByID(10));
+        }
+
+
+        if (GUILayout.Button("worm dead"))
+        {
+            Worm.Instance.TakeDamage(1000);
         }
 
     }
