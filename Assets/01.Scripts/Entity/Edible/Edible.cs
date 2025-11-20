@@ -7,7 +7,7 @@ public class Edible : Entity
     [SerializeField] private string edibleName = "작은 벌레";
     [SerializeField] private int expReward = 10;
     [SerializeField] private float hungerRestore = 10f;
-    [SerializeField] private float requiredSize = 0.5f; // ⭐ 추가: 먹기 위해 필요한 최소 크기
+    //[SerializeField] private float requiredSize = 0.5f; // ⭐ 추가: 먹기 위해 필요한 최소 크기
 
     [Header("먹기 이펙트")]
     [SerializeField] private GameObject eatEffect;
@@ -33,5 +33,5 @@ public class Edible : Entity
     public string GetEdibleName() => edibleName;
     public int GetExpReward() => expReward;
     public float GetHungerRestore() => hungerRestore;
-    public float GetRequiredSize() => requiredSize; // ⭐ 추가
+    //public float GetRequiredSize() => requiredSize; // ⭐ 추가
 }

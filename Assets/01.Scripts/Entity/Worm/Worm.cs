@@ -119,15 +119,16 @@ public class Worm : Entity
         if (edible == null || edible.IsDead()) return false;
 
         float currentSize = status.GetSize(); // ⭐ 추가
-        float targetRequiredSize = edible.GetRequiredSize(); // ⭐ 추가
         float targetMaxHealth = edible.GetMaxHealth();
 
-        // ⭐ 추가: 1단계 - 크기 체크 (우선순위 높음)
-        if (currentSize < targetRequiredSize)
-        {
-            LogHelper.Log($"{edible.GetEdibleName()}은(는) 너무 커서 먹을 수 없음! (필요 크기: {targetRequiredSize}, 현재 크기: {currentSize})");
-            return false;
-        }
+
+        //float targetRequiredSize = edible.GetRequiredSize(); // ⭐ 추가
+        //// ⭐ 추가: 1단계 - 크기 체크 (우선순위 높음)
+        //if (currentSize < targetRequiredSize)
+        //{
+        //    LogHelper.Log($"{edible.GetEdibleName()}은(는) 너무 커서 먹을 수 없음! (필요 크기: {targetRequiredSize}, 현재 크기: {currentSize})");
+        //    return false;
+        //}
 
         // ⭐ 수정: 2단계 - 데미지 체크 (한입에 먹을지 판단)
         if (biteDamage >= targetMaxHealth)
