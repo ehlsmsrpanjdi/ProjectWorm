@@ -18,7 +18,7 @@ public abstract class Entity : MonoBehaviour
 
     [SerializeField] protected BoxCollider2D col;
 
-    private void Reset()
+    protected virtual void Reset()
     {
         rb = GetComponentInChildren<Rigidbody2D>();
         if (rb == null)
