@@ -70,7 +70,6 @@ public abstract class Entity : MonoBehaviour
             Instantiate(deathEffect, transform.position, Quaternion.identity);
         }
 
-        Destroy(gameObject);
     }
 
     public float GetMaxHealth() => maxHealth;

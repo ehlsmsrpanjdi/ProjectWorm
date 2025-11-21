@@ -6,13 +6,10 @@ public class VaccumSkillBody : SkillBodyBase
 {
     private List<Entity> entitiesInRange = new List<Entity>();
     private Dictionary<Entity, float> damageTimers = new Dictionary<Entity, float>();
-    private Dictionary<Entity, CoroutineHandle> suckingEntities = new Dictionary<Entity, CoroutineHandle>();
+    private Dictionary<Entity, Coroutine> suckingEntities = new Dictionary<Entity, Coroutine>();
 
-    private struct CoroutineHandle
-    {
-        public Coroutine coroutine;
-        public bool isActive;
-    }
+    // TriggerExit에서 표시만 하고 실제 삭제는 Update에서 처리
+    private HashSet<Entity> pendingRemove = new HashSet<Entity>();
 
     public override void Init(ActiveSkillBase _SkillContext)
     {
@@ -24,128 +21,128 @@ public class VaccumSkillBody : SkillBodyBase
     {
         base.Update();
 
-        List<Entity> deadEntities = new List<Entity>();
-
-        foreach (var entity in entitiesInRange)
+        // 1) TriggerExit로 표시된 애들 먼저 제거
+        if (pendingRemove.Count > 0)
         {
+            foreach (var e in pendingRemove)
+            {
+                entitiesInRange.Remove(e);
+                damageTimers.Remove(e);
+            }
+            pendingRemove.Clear();
+        }
+
+        // 2) 지속 데미지 계산 (역순 안전)
+        for (int i = entitiesInRange.Count - 1; i >= 0; i--)
+        {
+            var entity = entitiesInRange[i];
+
             if (entity == null || entity.IsDead())
             {
-                deadEntities.Add(entity);
+                // 사망 → 흡입 시작 → 리스트 제거
+                HandleDeadEntity(entity);
                 continue;
             }
 
+            // 타이머 업데이트
             if (!damageTimers.ContainsKey(entity))
-            {
                 damageTimers[entity] = 0f;
-            }
 
             damageTimers[entity] += Time.deltaTime;
 
+            // 1초 데미지
             if (damageTimers[entity] >= 1f)
             {
-                DealContinuousDamage(entity, skillDamage);
                 damageTimers[entity] = 0f;
+                DealContinuousDamage(entity, skillDamage);
 
+                // 방금 죽었을 수도 있음
                 if (entity.IsDead())
                 {
-                    Edible edible = entity.GetComponent<Edible>();
-                    if (edible != null)
-                    {
-                        StartSucking(edible);
-                    }
+                    HandleDeadEntity(entity);
                 }
             }
         }
-
-        foreach (var dead in deadEntities)
-        {
-            entitiesInRange.Remove(dead);
-            damageTimers.Remove(dead);
-        }
     }
 
-    // ⭐ 올바른 오버라이드!
+    private void HandleDeadEntity(Entity entity)
+    {
+        Edible edible = entity.GetComponent<Edible>();
+        if (edible != null)
+            TryStartSucking(edible);
+
+        entitiesInRange.Remove(entity);
+        damageTimers.Remove(entity);
+    }
+
     protected override void OnTriggerEnter2D(Collider2D collision)
     {
-        // ⭐ 부모의 일반 데미지 로직 무시 (useContinuousDamage = true니까 어차피 안 돌아감)
-
         if (collision.GetComponent<Worm>() != null) return;
 
         Entity entity = collision.GetComponent<Entity>();
         if (entity != null && !entitiesInRange.Contains(entity))
         {
             entitiesInRange.Add(entity);
-            damageTimers[entity] = 0.99f; // 거의 바로 첫 데미지
-
-            LogHelper.Log($"{entity.name}이(가) 흡입 범위에 진입!");
+            damageTimers[entity] = 0.99f;
         }
     }
 
-    // ⭐ 추가: OnTriggerExit2D도 필요
     private void OnTriggerExit2D(Collider2D collision)
     {
         Entity entity = collision.GetComponent<Entity>();
         if (entity != null)
         {
-            entitiesInRange.Remove(entity);
-            damageTimers.Remove(entity);
-
-            LogHelper.Log($"{entity.name}이(가) 흡입 범위에서 벗어남");
+            // 직접 Remove 금지 → 충돌 예방
+            pendingRemove.Add(entity);
         }
     }
 
-    private void StartSucking(Edible edible)
+    private void TryStartSucking(Edible edible)
     {
+        if (edible == null) return;
         if (suckingEntities.ContainsKey(edible)) return;
 
-        Coroutine coroutine = StartCoroutine(SuckToMouth(edible));
-        suckingEntities[edible] = new CoroutineHandle { coroutine = coroutine, isActive = true };
+        Coroutine c = StartCoroutine(SuckToMouth(edible));
+        suckingEntities[edible] = c;
     }
 
     private IEnumerator SuckToMouth(Edible edible)
     {
-        float elapsed = 0f;
-        float duration = 1f;
-
-        Vector3 startPos = edible.transform.position;
+        Transform edibleTf = edible.transform;
         Transform mouth = Worm.Instance.wormHead.transform;
 
-        while (elapsed < duration)
+        while (true)
         {
             if (edible == null || mouth == null)
-            {
                 yield break;
+
+            // 점점 빠르게 가까워지는 느낌의 Lerp
+            edibleTf.position = Vector3.Lerp(edibleTf.position, mouth.position, Time.deltaTime * 5f);
+
+            // ★ 거리 체크 → "먹기 처리" + Destroy
+            float dist = Vector3.Distance(edibleTf.position, mouth.position);
+            if (dist <= 1f)
+            {
+                Worm.Instance.GainExp(edible.GetExpReward());
+                Worm.Instance.RestoreHunger(edible.GetHungerRestore());
+
+                LogHelper.Log($"{edible.GetEdibleName()}을(를) 흡입해서 먹었다!");
+
+                Destroy(edible.gameObject); // ← 실제 파괴 시점
+
+                break;
             }
 
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-
-            edible.transform.position = Vector3.Lerp(startPos, mouth.position, t);
-
             yield return null;
-        }
-
-        if (edible != null)
-        {
-            Worm.Instance.GainExp(edible.GetExpReward());
-            Worm.Instance.RestoreHunger(edible.GetHungerRestore());
-
-            LogHelper.Log($"{edible.GetEdibleName()}을(를) 흡입해서 먹었다!");
-
-            Destroy(edible.gameObject);
         }
 
         suckingEntities.Remove(edible);
     }
 
+
     private void OnDestroy()
     {
-        foreach (var kvp in suckingEntities)
-        {
-            if (kvp.Value.coroutine != null)
-            {
-                StopCoroutine(kvp.Value.coroutine);
-            }
-        }
+        foreach (var c in suckingEntities.Values)
+            if (c != null) StopCoroutine(c);
     }
 }

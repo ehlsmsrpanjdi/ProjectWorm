@@ -7,6 +7,11 @@ public class DebugWindow : EditorWindow
     TMP_FontAsset targetFont;
 
 
+
+    private float debugFloatValue = 0f;
+
+
+
     [MenuItem("Window/DebugWindow")]
     public static void ShowWindow()
     {
@@ -31,6 +36,8 @@ public class DebugWindow : EditorWindow
             ReplaceAllTMPFonts(targetFont);
         }
 
+
+        #region "Skill"
 
         if (GUILayout.Button("Exp Gain"))
         {
@@ -73,10 +80,27 @@ public class DebugWindow : EditorWindow
             SkillManager.Instance.SelectSkill(SkillDataManager.Instance.GetSkillByID(10));
         }
 
+        #endregion
+
+        GUILayout.Space(10);
+        GUILayout.Label("DebugFloatValue", EditorStyles.boldLabel);
+
+        debugFloatValue = EditorGUILayout.FloatField("입력값 : ", debugFloatValue);
 
         if (GUILayout.Button("worm dead"))
         {
             Worm.Instance.TakeDamage(1000);
+        }
+
+
+        if (GUILayout.Button("Calculate Scale"))
+        {
+            Worm.Instance.DebugSizeChange(debugFloatValue);
+        }
+
+        if (GUILayout.Button("Calculate WormAnim"))
+        {
+            Worm.Instance.DebugCalculateAnim(debugFloatValue);
         }
 
     }

@@ -20,29 +20,23 @@ public class SandstormBody : SkillBodyBase
         // 범위 내 모든 적에게 1초마다 데미지
         List<Entity> deadEntities = new List<Entity>();
 
-        foreach (var entity in entitiesInRange)
+        for (int i = entitiesInRange.Count - 1; i >= 0; i--)
         {
+            var entity = entitiesInRange[i];
+
             if (entity == null || entity.IsDead())
             {
-                deadEntities.Add(entity);
+                entitiesInRange.RemoveAt(i);
+                damageTimers.Remove(entity);
                 continue;
-            }
-
-            // 타이머 업데이트
-            if (!damageTimers.ContainsKey(entity))
-            {
-                damageTimers[entity] = 0f;
             }
 
             damageTimers[entity] += Time.deltaTime;
 
-            // 1초마다 데미지
             if (damageTimers[entity] >= 1f)
             {
                 DealContinuousDamage(entity, skillDamage);
                 damageTimers[entity] = 0f;
-
-                LogHelper.Log($"{entity.name}에게 모래 소용돌이 데미지 {skillDamage}");
             }
         }
 

@@ -201,6 +201,16 @@ public class Worm : Entity
         }
     }
 
+    public void DebugSizeChange(float _Size)
+    {
+        OnSizeChanged(_Size);
+    }
+
+    public void DebugCalculateAnim(float _Ratio)
+    {
+        wormAnimation.CalculateScale(_Ratio);
+    }
+
     #endregion
 
     #region "GetSet"
