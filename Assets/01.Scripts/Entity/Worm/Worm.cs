@@ -24,6 +24,14 @@ public class Worm : Entity
     public WormEating wormHead { get; private set; }
     public WormTale wormTale { get; private set; }
 
+    [field: SerializeField] public GameObject ParasiteNavi { get; private set; }
+
+    protected override void Reset()
+    {
+        base.Reset();
+        ParasiteNavi = this.TryFindChild("ParasiteTarget");
+    }
+
     protected override void Awake()
     {
         instance = this;

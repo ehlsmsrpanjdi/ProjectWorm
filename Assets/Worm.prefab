@@ -452,6 +452,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1090011398548207910}
   - component: {fileID: 3671384480777055206}
+  - component: {fileID: 8371883898450733148}
   m_Layer: 27
   m_Name: Spine 29
   m_TagString: Untagged
@@ -511,6 +512,18 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1.72
+--- !u!114 &8371883898450733148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 860111255065507367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ce73adf4885f30419f7477be5ceeef9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1080890593049862552
 GameObject:
   m_ObjectHideFlags: 0
@@ -708,6 +721,7 @@ Transform:
   - {fileID: 7832401980311635311}
   - {fileID: 7880456326762106656}
   - {fileID: 2491634773000917260}
+  - {fileID: 3174487841761980493}
   m_Father: {fileID: 764194869643432560}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!58 &5813798611796516811
@@ -2259,7 +2273,10 @@ MonoBehaviour:
   maxHealth: 100
   deathEffect: {fileID: 0}
   hitEffect: {fileID: 0}
+  rb: {fileID: 0}
+  col: {fileID: 0}
   biteDamage: 50
+  <ParasiteNavi>k__BackingField: {fileID: 6130117560087362927}
 --- !u!1 &5291821662391226115
 GameObject:
   m_ObjectHideFlags: 0
@@ -2698,6 +2715,53 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1.72
+--- !u!1 &6130117560087362927
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3174487841761980493}
+  - component: {fileID: 4124315640282631732}
+  m_Layer: 27
+  m_Name: ParasiteTarget
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3174487841761980493
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6130117560087362927}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.00000003774895, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -4.9000006, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3785399293883708483}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4124315640282631732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6130117560087362927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f1b432d366776349a7363ad5219980f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  head: {fileID: 3785399293883708483}
+  localOffset: {x: 0, y: -3, z: 0}
+  headForwardVec: {x: 0, y: 0, z: 0}
 --- !u!1 &6205671832362620008
 GameObject:
   m_ObjectHideFlags: 0
